@@ -1735,7 +1735,15 @@ function BlogsManager() {
       setTimeout(() => triggerDeploy(), 800)  // slight delay taaki Firebase save complete ho
     }
   }
-  const handleDelete = async () => { const ok = await deleteBlog(delRow.id); ok ? flash('✅ Deleted!') : flash('❌ Failed'); setDelRow(null) }
+  const handleDelete = async () => {
+    const ok = await deleteBlog(delRow.id)
+    ok ? flash('✅ Deleted!') : flash('❌ Failed')
+    setDelRow(null)
+    // Auto-deploy after delete to remove static file
+    if (ok) {
+      setTimeout(() => triggerDeploy(), 800)
+    }
+  }
 
   const handleGenerateStatic = async () => {
     if (blogs.length === 0) { flash('❌ No blogs to deploy!'); return }

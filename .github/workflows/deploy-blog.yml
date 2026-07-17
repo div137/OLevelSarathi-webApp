@@ -41,27 +41,15 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Setup Firebase Service Account
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/firebase-service-account.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/firebase-service-account.json" >> $GITHUB_ENV
-
       - name: Deploy to Firebase Hosting
-        run: |
-          npx firebase-tools@latest deploy \
-            --only hosting:olevelsarathi \
-            --project olevelsarathi \
-            --non-interactive \
-            --force
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-
-      - name: Cleanup credentials
-        if: always()
-        run: rm -f $HOME/firebase-service-account.json
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: olevelsarathi
+          channelId: live
 
       - name: Print deploy summary
         run: |
           echo "✅ Deploy complete!"
           echo "🌐 Live at: https://olevelsarathi.in"
-          echo "📝 Triggered by: ${{ github.event_name }}"

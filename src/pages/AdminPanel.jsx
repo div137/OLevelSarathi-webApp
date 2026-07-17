@@ -1669,7 +1669,9 @@ function BlogsManager() {
   const [editRow, setEditRow] = useState(null)
   const [delRow, setDelRow]   = useState(null)
   const [msg, setMsg]         = useState('')
-  const [genStatus, setGenStatus] = useState(null)  // null | 'running' | { success, errors }
+  const [genStatus, setGenStatus] = useState(null)
+  const [genErrMsg, setGenErrMsg] = useState('')
+  const [autoDeploy, setAutoDeploy] = useState(true)  // default ON
   const [form, setForm]       = useState({ title: '', excerpt: '', content: '', slug: '', category: '', image: '', author: '', readTime: '', keywords: '' })
   const { q, setQ, cat, setCat, sortF, sortD, toggleSort, filtered, uniqueCats } = useTableState(
     blogs.map(b => ({ ...b, _id: b.id })),
@@ -1684,12 +1686,54 @@ function BlogsManager() {
     setForm({ title: row.title || '', excerpt: row.excerpt || '', content: row.content || '', slug: row.slug || '', category: row.category || '', image: row.image || '', author: row.author || '', readTime: row.readTime || '', keywords: row.keywords || '' })
     setModal('edit')
   }
+
+  // Trigger GitHub Actions deploy
+  const triggerDeploy = async () => {
+    const ghToken = localStorage.getItem('gh_actions_token')
+    const ghRepo  = localStorage.getItem('gh_actions_repo') || 'div137/OLevelSarathi-webApp'
+    if (!ghToken) { fireToast({ type: 'error', text: '⚠️ GitHub token set nahi hai — manually Publish Static Pages dabao' }); return }
+    fireToast({ type: 'loading', text: '⏳ Static deploy trigger ho raha hai...' })
+    try {
+      const res = await fetch(`https://api.github.com/repos/${ghRepo}/dispatches`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${ghToken}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ event_type: 'blog-updated', client_payload: { triggered_by: 'auto-save' } }),
+      })
+      if (res.status === 204) {
+        fireToast({ type: 'success', text: '✅ Static deploy trigger ho gaya! ~3 min mein live.' })
+        setGenStatus('triggered')
+      } else {
+        const t = await res.text()
+        fireToast({ type: 'error', text: `❌ Deploy error ${res.status}: ${t}` })
+      }
+    } catch (e) {
+      fireToast({ type: 'error', text: '❌ Network error: ' + e.message })
+    }
+  }
+
   const handleSave = async () => {
     if (!form.title.trim()) return
     const slug = form.slug.trim() || form.title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
     const data = { ...form, title: form.title.trim(), slug }
-    if (modal === 'add') { const id = await addBlog(data); id ? flash('✅ Blog added!') : flash('❌ Failed'); setModal(null) }
-    else { const ok = await updateBlog(editRow.id, data); ok ? flash('✅ Updated!') : flash('❌ Failed'); setModal(null) }
+    let ok = false
+    if (modal === 'add') {
+      const id = await addBlog(data)
+      ok = !!id
+      ok ? flash('✅ Blog added!') : flash('❌ Failed')
+    } else {
+      ok = await updateBlog(editRow.id, data)
+      ok ? flash('✅ Updated!') : flash('❌ Failed')
+    }
+    setModal(null)
+    // Auto-deploy agar checked hai
+    if (ok && autoDeploy) {
+      setTimeout(() => triggerDeploy(), 800)  // slight delay taaki Firebase save complete ho
+    }
   }
   const handleDelete = async () => { const ok = await deleteBlog(delRow.id); ok ? flash('✅ Deleted!') : flash('❌ Failed'); setDelRow(null) }
 
@@ -1735,10 +1779,12 @@ function BlogsManager() {
       } else {
         const errText = await response.text()
         setGenStatus('error')
-        fireToast({ type: 'error', text: `❌ GitHub API error: ${response.status} — ${errText}` })
+        setGenErrMsg(`❌ GitHub API error: ${response.status} — ${errText}`)
+        fireToast({ type: 'error', text: `❌ GitHub API error: ${response.status}` })
       }
     } catch (e) {
       setGenStatus('error')
+      setGenErrMsg('❌ Network error: ' + e.message)
       fireToast({ type: 'error', text: '❌ Network error: ' + e.message })
     }
   }
@@ -1781,7 +1827,7 @@ function BlogsManager() {
               </div>
             )}
             {genStatus === 'error' && (
-              <div style={{ marginTop: 8, fontSize: '0.82rem', color: T.red }}>❌ Deploy fail hua. Token aur repo naam check karo.</div>
+              <div style={{ marginTop: 8, fontSize: '0.82rem', color: T.red }}>{genErrMsg || '❌ Deploy fail hua. Token aur repo naam check karo.'}</div>
             )}
             {genStatus === 'config_needed' && (
               <div style={{ marginTop: 8, fontSize: '0.82rem', color: T.yellow }}>⚠️ GitHub Token aur Repo naam configure karo (neeche Settings mein).</div>
@@ -1838,8 +1884,26 @@ function BlogsManager() {
             <div><FL>Excerpt</FL><textarea style={S.textarea} value={form.excerpt} onChange={e => setForm(p => ({ ...p, excerpt: e.target.value }))} placeholder="Short description shown in blog list..." /></div>
             <div><FL>Content (HTML)</FL><textarea style={{ ...S.textarea, minHeight: 120, fontFamily: 'monospace', fontSize: '0.8rem' }} value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} placeholder="<h2>Introduction</h2><p>...</p>" /></div>
             <div><FL>Keywords (SEO)</FL><input style={S.input} value={form.keywords} onChange={e => setForm(p => ({ ...p, keywords: e.target.value }))} placeholder="python tutorial, o level, nielit" /></div>
+
+            {/* Auto-deploy toggle */}
+            <div style={{ padding: '12px 14px', borderRadius: 10, background: autoDeploy ? 'rgba(16,185,129,0.08)' : T.card2, border: `1px solid ${autoDeploy ? T.green + '44' : T.border2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, cursor: 'pointer' }}
+              onClick={() => setAutoDeploy(v => !v)}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: T.text, display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <FiUploadCloud size={14} style={{ color: autoDeploy ? T.green : T.muted }} />
+                  Save karte hi Static Deploy karo
+                </div>
+                <div style={{ fontSize: '0.75rem', color: T.muted, marginTop: 3 }}>
+                  {autoDeploy ? '✅ GitHub Actions trigger hoga — ~3 min mein page live' : '⏸️ Manual deploy karni hogi baad mein'}
+                </div>
+              </div>
+              <div style={{ width: 40, height: 22, borderRadius: 999, background: autoDeploy ? T.green : T.border2, position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', top: 3, left: autoDeploy ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
+              </div>
+            </div>
+
             <div style={{ display: 'flex', gap: 10 }}>
-              <button style={S.btn} onClick={handleSave}><FiSave size={14} /> Save</button>
+              <button style={S.btn} onClick={handleSave}><FiSave size={14} /> Save{autoDeploy ? ' & Deploy' : ''}</button>
               <button style={S.btnGhost} onClick={() => setModal(null)}>Cancel</button>
             </div>
           </div>

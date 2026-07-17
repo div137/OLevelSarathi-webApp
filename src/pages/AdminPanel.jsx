@@ -1793,6 +1793,14 @@ function BlogsManager() {
     { key: 'image',    label: 'Image',    render: v => v ? <img src={v} alt="" style={{ width: 60, height: 36, objectFit: 'cover', borderRadius: 6 }} /> : <span style={{ color: T.muted }}>—</span> },
     { key: 'title',    label: 'Title',    maxWidth: 220 },
     { key: 'category', label: 'Category', render: v => <Badge color={T.accent}>{v || '—'}</Badge> },
+    { key: 'staticDeployed', label: 'Static', render: (v, row) => v
+      ? <a href={row.staticUrl || `https://olevelsarathi.in/blog/${row.slug || row.id}`} target="_blank" rel="noopener noreferrer"
+          title={`Live: ${row.staticUrl || ''}\nDeployed: ${row.staticDeployedAt || ''}`}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: T.green, fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none' }}>
+          ✅ Live
+        </a>
+      : <span style={{ color: T.muted, fontSize: '0.8rem' }}>⏳ Pending</span>
+    },
     { key: 'author',   label: 'Author',   maxWidth: 120 },
     { key: 'readTime', label: 'Read Time' },
   ]

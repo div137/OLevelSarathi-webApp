@@ -9,7 +9,7 @@
  */
 
 import { initializeApp } from 'firebase/app'
-import { getDatabase, ref, get } from 'firebase/database'
+import { getDatabase, ref, get, update } from 'firebase/database'
 import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -821,6 +821,7 @@ async function main() {
 
   let generated = 0
   let errors = 0
+  const successfulSlugs = []  // track which posts were generated successfully
 
   // Generate each post page
   for (const post of posts) {
@@ -833,6 +834,7 @@ async function main() {
       writeFileSync(filePath, html, 'utf8')
       console.log(`  ✅ /blog/${slug}.html  — "${post.title}"`)
       generated++
+      successfulSlugs.push({ id: post.id, slug })
     } catch (err) {
       console.error(`  ❌ Failed: ${slug} — ${err.message}`)
       errors++
@@ -848,6 +850,25 @@ async function main() {
   } catch (err) {
     console.error(`  ❌ Failed: blog/index.html — ${err.message}`)
     errors++
+  }
+
+  // ── Update Firebase RTDB: mark each post as staticDeployed ──────────────
+  if (successfulSlugs.length > 0) {
+    console.log('\n📝 Updating Firebase RTDB — staticDeployed flags...')
+    const deployedAt = new Date().toISOString()
+    const updatePromises = successfulSlugs.map(({ id, slug }) =>
+      update(ref(db, `blogs/${id}`), {
+        staticDeployed: true,
+        staticDeployedAt: deployedAt,
+        staticUrl: `${SITE_URL}/blog/${slug}`,
+      }).then(() => {
+        console.log(`  ✅ Marked: ${slug}`)
+      }).catch(err => {
+        console.warn(`  ⚠️  RTDB update failed for ${slug}: ${err.message}`)
+      })
+    )
+    await Promise.all(updatePromises)
+    console.log('✅ Firebase RTDB updated!\n')
   }
 
   console.log(`\n📊 Summary: ${generated} files generated, ${errors} errors`)

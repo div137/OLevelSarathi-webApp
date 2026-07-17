@@ -9,7 +9,7 @@
  */
 
 import { initializeApp } from 'firebase/app'
-import { getDatabase, ref, get, update } from 'firebase/database'
+import { getDatabase, ref, get } from 'firebase/database'
 import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -21,10 +21,10 @@ const DIST_BLOG = join(ROOT, 'dist', 'blog')
 // ── Firebase config ──────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: 'AIzaSyANlX-0ZePklhDK1MAndTnla53sIeT4DJM',
-  authDomain: 'olevelsarathi.firebaseapp.com',
+  authDomain: 'tic-tic-ta.firebaseapp.com',
   databaseURL: 'https://tic-tic-ta-default-rtdb.firebaseio.com',
-  projectId: 'olevelsarathi',
-  storageBucket: 'olevelsarathi.firebasestorage.app',
+  projectId: 'tic-tic-ta',
+  storageBucket: 'tic-tic-ta.firebasestorage.app',
   messagingSenderId: '626543464326',
   appId: '1:626543464326:web:b2e5d1665247b0bf3ce607',
 }
@@ -852,22 +852,38 @@ async function main() {
     errors++
   }
 
-  // ── Update Firebase RTDB: mark each post as staticDeployed ──────────────
+  // ── Update Firebase RTDB via REST API: mark each post as staticDeployed ──
   if (successfulSlugs.length > 0) {
     console.log('\n📝 Updating Firebase RTDB — staticDeployed flags...')
     const deployedAt = new Date().toISOString()
-    const updatePromises = successfulSlugs.map(({ id, slug }) =>
-      update(ref(db, `blogs/${id}`), {
-        staticDeployed: true,
-        staticDeployedAt: deployedAt,
-        staticUrl: `${SITE_URL}/blog/${slug}`,
-      }).then(() => {
-        console.log(`  ✅ Marked: ${slug}`)
-      }).catch(err => {
-        console.warn(`  ⚠️  RTDB update failed for ${slug}: ${err.message}`)
-      })
-    )
-    await Promise.all(updatePromises)
+    const RTDB_URL = 'https://tic-tic-ta-default-rtdb.firebaseio.com'
+
+    for (const { id, slug } of successfulSlugs) {
+      try {
+        const updateData = {
+          staticDeployed: true,
+          staticDeployedAt: deployedAt,
+          staticUrl: `${SITE_URL}/blog/${slug}`,
+        }
+        // Use Firebase REST API with PATCH (partial update)
+        const res = await fetch(
+          `${RTDB_URL}/blogs/${id}.json`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData),
+          }
+        )
+        if (res.ok) {
+          console.log(`  ✅ Marked: ${slug}`)
+        } else {
+          const err = await res.text()
+          console.warn(`  ⚠️  RTDB update failed for ${slug}: ${err}`)
+        }
+      } catch (err) {
+        console.warn(`  ⚠️  RTDB update error for ${slug}: ${err.message}`)
+      }
+    }
     console.log('✅ Firebase RTDB updated!\n')
   }
 

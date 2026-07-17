@@ -1,0 +1,33 @@
+# Dependencies — kabhi push mat karo (300MB+)
+node_modules/
+.venv/
+
+# Build output — GitHub Actions khud banayega
+dist/
+
+# Vite cache
+.vite-dev-cache/
+
+# Firebase local cache
+.firebase/
+
+# Environment files — secrets nahi jaane chahiye
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+nul

@@ -1,0 +1,23 @@
+{
+  "projects": {
+    "default": "olevelsarathi",
+    "npx firebase deploy --only hosting:olevelsarathi": "tic-tic-ta"
+  },
+  "targets": {
+    "olevelsarathi": {
+      "hosting": {
+        "olevelsarathi": [
+          "olevelsarathi"
+        ]
+      }
+    },
+    "tic-tic-ta": {
+      "hosting": {
+        "olevelsarathi": [
+          "tic-tic-ta"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

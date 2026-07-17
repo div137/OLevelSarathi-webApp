@@ -1,0 +1,20 @@
+{
+  "name": "O Level Sarathi - NIELIT O-Level Exam Preparation",
+  "short_name": "O Level Sarathi",
+  "description": "Free NIELIT O-Level mock tests, study notes, and practical solutions",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#090c14",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "/logo.png", "sizes": "any", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["education", "productivity", "reference"],
+  "shortcuts": [
+    { "name": "Mock Tests", "url": "/tests", "description": "Take NIELIT O-Level mock tests" },
+    { "name": "Study Material", "url": "/theory", "description": "Access theory notes" },
+    { "name": "FAQ", "url": "/faq", "description": "O Level exam questions answered" }
+  ]
+}

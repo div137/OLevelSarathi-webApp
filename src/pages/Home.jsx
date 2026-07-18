@@ -720,6 +720,11 @@ export default function Home() {
       <section style={{ padding:'0 24px', maxWidth:1200, margin:'0 auto' }}><AutoAd/></section>
 
       {/* ════════════════════════════════════════
+          LATEST BLOGS — after A Level section
+      ════════════════════════════════════════ */}
+      <LatestBlogs />
+
+      {/* ════════════════════════════════════════
           FEATURES GRID
       ════════════════════════════════════════ */}
       <section style={{ padding:'70px 24px', background:'var(--bg-card2)' }}>
@@ -785,11 +790,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ════════════════════════════════════════
-          LATEST BLOGS
-      ════════════════════════════════════════ */}
-      <LatestBlogs />
 
       {/* ════════════════════════════════════════
           CTA BANNER

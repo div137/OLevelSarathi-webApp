@@ -267,8 +267,8 @@ const SHARED_CSS_2 = `
     transition:all .25s cubic-bezier(.16,1,.3,1)}
   .rel-card:hover{border-color:var(--accent);transform:translateY(-4px);
     box-shadow:0 12px 28px rgba(0,0,0,.1)}
-  .rel-img{width:100%;height:150px;object-fit:cover}
-  .rel-img-ph{width:100%;height:150px;background:var(--accent-glow);
+  .rel-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+  .rel-img-ph{width:100%;aspect-ratio:16/9;background:var(--accent-glow);
     display:flex;align-items:center;justify-content:center;font-size:2.4rem}
   .rel-body{padding:13px 15px}
   .rel-cat{font-size:.67rem;font-weight:800;color:var(--accent);background:var(--accent-glow);

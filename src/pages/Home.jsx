@@ -449,9 +449,9 @@ function LatestBlogs() {
                 <div className={`card fade-up stagger-${(i%4)+1}`}
                   style={{ overflow:'hidden', borderRadius:16, cursor:'pointer', height:'100%', display:'flex', flexDirection:'column' }}>
 
-                  {/* Image — fixed height, no crop overflow */}
+                  {/* Image — 16:9 ratio, no crop */}
                   <div style={{
-                    height:160,
+                    aspectRatio:'16/9',
                     flexShrink:0,
                     overflow:'hidden',
                     position:'relative',

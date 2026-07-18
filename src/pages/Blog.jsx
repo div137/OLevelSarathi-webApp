@@ -58,8 +58,8 @@ export default function Blog() {
             <Link key={post.id} to={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}
               className={`card fade-up stagger-${(i%4)+1}`}>
               <article style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-                {/* Image */}
-                <div style={{ height: 200, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                {/* Image — 16:9 ratio */}
+                <div style={{ aspectRatio:'16/9', overflow: 'hidden', flexShrink: 0, position: 'relative', background:'var(--bg-card2)' }}>
                   {post.image ? (
                     <img
                       src={post.image}
@@ -69,7 +69,7 @@ export default function Blog() {
                       onMouseLeave={e => e.target.style.transform = 'scale(1)'}
                     />
                   ) : (
-                    <div style={{ height: '100%', background: 'linear-gradient(135deg, #4caf5022, #4caf5040)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>
+                    <div style={{ width:'100%', height:'100%', background: 'linear-gradient(135deg, #4caf5022, #4caf5040)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>
                       ✍️
                     </div>
                   )}

@@ -284,7 +284,7 @@ function Sidebar({ blogs, currentBlog }) {
 function RelatedCard({ post }) {
   return (
     <Link to={`/blog/${post.slug||post.id}`} className="bd-related-card">
-      <div style={{ height:150,overflow:'hidden',background:'var(--bg-card2)',display:'flex',alignItems:'center',justifyContent:'center' }}>
+      <div style={{ aspectRatio:'16/9', overflow:'hidden', background:'var(--bg-card2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
         {post.image
           ? <img src={post.image} alt={post.title} className="bd-rc-img"/>
           : <span style={{ fontSize:'2.4rem' }}>✍️</span>

@@ -410,12 +410,16 @@ function CategoryCard({ cat, index, onComingSoon }) {
 // ─── Latest Blogs ─────────────────────────────────────────────────────────────
 function LatestBlogs() {
   const { blogs, loading } = useBlogManagement()
-  const latest = blogs.slice(0, 4)
+  const latest = blogs.slice(0, 8)
   const placeholders = [
     { title:'NIELIT O Level Exam Pattern 2026 — Complete Guide', cat:'O Level', date:'June 2026', read:'5 min', icon:'🎓', color:'#4caf50' },
     { title:'M3-R5 Python: Top 50 MCQs जो बार-बार आते हैं',   cat:'Python',  date:'June 2026', read:'8 min', icon:'🐍', color:'#388e3c' },
     { title:'CCC Exam Strategy — 30 Days Preparation Plan',    cat:'CCC',     date:'May 2026',  read:'6 min', icon:'💻', color:'#66bb6a' },
     { title:'M1-R5 LibreOffice Shortcuts — Must Know',        cat:'Tips',    date:'May 2026',  read:'4 min', icon:'⚡', color:'#2e7d32' },
+    { title:'M4-R5 IoT: Arduino Basics for O Level Exam',     cat:'IoT',     date:'May 2026',  read:'7 min', icon:'🔌', color:'#4caf50' },
+    { title:'M2-R5 Web Design: HTML5 & CSS3 Key Topics',      cat:'Web',     date:'April 2026',read:'5 min', icon:'🌐', color:'#388e3c' },
+    { title:'O Level Practical Exam Tips — How to Score Full',cat:'Tips',    date:'April 2026',read:'6 min', icon:'💡', color:'#66bb6a' },
+    { title:'Database Management MCQs — Top 30 Questions',    cat:'Database',date:'April 2026',read:'4 min', icon:'🗄️', color:'#2e7d32' },
   ]
   const items = latest.length > 0 ? latest : null
 
@@ -423,43 +427,101 @@ function LatestBlogs() {
     <section style={{ padding:'70px 24px', background:'var(--bg-card2)' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
         <SectionHeader badge="✍️ Latest Articles" title="Blog & Study Tips" sub="Exam preparation tips, Python tutorials, career guidance — regularly updated." />
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:20 }}>
-          {loading ? [1,2,3,4].map(i=>(
+
+        <div style={{
+          display:'grid',
+          gridTemplateColumns:'repeat(4, 1fr)',
+          gap:20,
+        }}>
+          <style>{`
+            @media(max-width:900px){ .blog-grid{ grid-template-columns: repeat(2,1fr) !important; } }
+            @media(max-width:520px){ .blog-grid{ grid-template-columns: 1fr !important; } }
+          `}</style>
+
+          {loading ? [1,2,3,4,5,6,7,8].map(i=>(
             <div key={i} className="skeleton" style={{ height:280, borderRadius:16 }} />
-          )) : items ? items.map((p,i)=>(
-            <Link key={p.id} to={`/blog/${p.slug||p.id}`} style={{ textDecoration:'none' }}>
-              <div className={`card fade-up stagger-${(i%4)+1}`} style={{ overflow:'hidden', borderRadius:16, cursor:'pointer' }}>
-                <div style={{ height:120, background: p.image ? undefined : `linear-gradient(135deg, #4caf5022, #4caf5044)`, overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.5rem' }}>
-                  {p.image ? <img src={p.image} alt={p.title} style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : '✍️'}
-                </div>
-                <div style={{ padding:'16px 18px' }}>
-                  <h3 style={{ fontWeight:800, fontSize:'0.9rem', color:'var(--text-primary)', lineHeight:1.45, marginBottom:8, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{p.title}</h3>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'0.72rem', color:'var(--text-muted)' }}>
-                    <span>{p.date}</span>
-                    <span style={{ color:'var(--accent)', fontWeight:700 }}>Read →</span>
+          )) : (items || placeholders).map((p,i) => {
+            const isReal = !!items
+            return (
+              <Link key={isReal ? p.id : i}
+                to={isReal ? `/blog/${p.slug||p.id}` : '/blog'}
+                style={{ textDecoration:'none' }}>
+                <div className={`card fade-up stagger-${(i%4)+1}`}
+                  style={{ overflow:'hidden', borderRadius:16, cursor:'pointer', height:'100%', display:'flex', flexDirection:'column' }}>
+
+                  {/* Image — fixed height, no crop overflow */}
+                  <div style={{
+                    height:160,
+                    flexShrink:0,
+                    overflow:'hidden',
+                    position:'relative',
+                    background: isReal && p.image ? '#000' : `linear-gradient(135deg, ${isReal ? '#4caf5022' : (p.color||'#4caf50')+'22'}, ${isReal ? '#4caf5044' : (p.color||'#4caf50')+'44'})`,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                  }}>
+                    {isReal && p.image ? (
+                      <img
+                        src={p.image}
+                        alt={p.title}
+                        style={{
+                          width:'100%', height:'100%',
+                          objectFit:'cover',
+                          objectPosition:'center top',
+                          display:'block',
+                        }}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span style={{ fontSize:'2.2rem' }}>{isReal ? '✍️' : p.icon}</span>
+                    )}
+                    {/* Category badge */}
+                    {(isReal ? p.category : p.cat) && (
+                      <span style={{
+                        position:'absolute', top:10, left:12,
+                        fontSize:'0.65rem', fontWeight:800,
+                        color:'#fff', background: isReal ? '#4caf50' : (p.color||'#4caf50'),
+                        padding:'3px 9px', borderRadius:999, letterSpacing:'0.04em',
+                      }}>
+                        {isReal ? p.category : p.cat}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div style={{ padding:'14px 16px', flex:1, display:'flex', flexDirection:'column', gap:8 }}>
+                    <h3 style={{
+                      fontWeight:800, fontSize:'0.88rem', color:'var(--text-primary)',
+                      lineHeight:1.45, flex:1,
+                      display:'-webkit-box', WebkitLineClamp:2,
+                      WebkitBoxOrient:'vertical', overflow:'hidden'
+                    }}>
+                      {isReal ? p.title : p.title}
+                    </h3>
+                    {isReal && p.excerpt && (
+                      <p style={{
+                        fontSize:'0.75rem', color:'var(--text-secondary)', lineHeight:1.5,
+                        display:'-webkit-box', WebkitLineClamp:2,
+                        WebkitBoxOrient:'vertical', overflow:'hidden'
+                      }}>{p.excerpt}</p>
+                    )}
+                    <div style={{
+                      display:'flex', justifyContent:'space-between', alignItems:'center',
+                      fontSize:'0.7rem', color:'var(--text-muted)',
+                      paddingTop:8, borderTop:'1px solid var(--border)', marginTop:'auto'
+                    }}>
+                      <span>{isReal ? (p.date||'') : `${p.date} • ${p.read}`}</span>
+                      <span style={{ color:'var(--accent)', fontWeight:700 }}>Read →</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          )) : placeholders.map((p,i)=>(
-            <Link key={i} to="/blog" style={{ textDecoration:'none' }}>
-              <div className={`card fade-up stagger-${(i%4)+1}`} style={{ overflow:'hidden', borderRadius:16, cursor:'pointer' }}>
-                <div style={{ height:120, background:`linear-gradient(135deg, ${p.color}18, ${p.color}33)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.5rem' }}>{p.icon}</div>
-                <div style={{ padding:'16px 18px' }}>
-                  <span style={{ fontSize:'0.68rem', fontWeight:700, color:p.color, background:`${p.color}15`, padding:'2px 8px', borderRadius:999, display:'inline-block', marginBottom:8 }}>{p.cat}</span>
-                  <h3 style={{ fontWeight:800, fontSize:'0.9rem', color:'var(--text-primary)', lineHeight:1.45, marginBottom:8 }}>{p.title}</h3>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:'0.72rem', color:'var(--text-muted)' }}>
-                    <span>{p.date} • {p.read}</span>
-                    <span style={{ color:'var(--accent)', fontWeight:700 }}>Read →</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            )
+          })}
         </div>
-        <div style={{ textAlign:'center', marginTop:28 }}>
-          <Link to="/blog" className="btn btn-primary" style={{ textDecoration:'none', gap:8 }}>
-            All Articles <FiArrowRight size={14}/>
+
+        {/* See All Posts button */}
+        <div style={{ textAlign:'center', marginTop:36 }}>
+          <Link to="/blog" className="btn btn-primary" style={{ textDecoration:'none', display:'inline-flex', alignItems:'center', gap:8, padding:'13px 32px', fontSize:'0.95rem' }}>
+            See All Posts <FiArrowRight size={16}/>
           </Link>
         </div>
       </div>
